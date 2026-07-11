@@ -62,3 +62,9 @@ Phase 1 file set complete in working tree; uncommitted, awaiting Chairwoman revi
 - Audit, options, design proposals, implementation drafting: **AI (Claude)**.
 - Gina accepted the proposed Phase 1 scope and sequencing; directed continuation despite the registry limitation; rejected nothing to date; final review pending.
 - Verification: deterministic in-session checks by AI; test execution and acceptance by Gina pending.
+
+---
+
+## Addendum (2026-07-12)
+
+Phase 1 explicitly approved by Gina: `decisions/approvals/0001-phase1-governance-kernel.md` (references commit `cfe536f`). The "Chairwoman Decision Required" review status above is closed by that record. Original text preserved unchanged.

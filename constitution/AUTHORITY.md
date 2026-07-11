@@ -1,7 +1,7 @@
 # Authority Model — Gina AI-Native Venture Studio
 
 Version: 0.1.0
-Status: Draft Ready (file creation approved in Phase 1 decision, 2026-07-11; canonical wording pending Chairwoman review)
+Status: Chairwoman Approved — see `decisions/approvals/0001-phase1-governance-kernel.md` (approved by Gina, 2026-07-12)
 Source: `CLAUDE.md` — Founder Authority, Status and Approval Integrity
 
 ---

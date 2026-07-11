@@ -1,7 +1,7 @@
 # SKILL: CEO Decision Packet
 
 Version: 0.1.0
-Status: Draft Ready (creation approved in Phase 1 decision, 2026-07-11; content pending Chairwoman review)
+Status: Chairwoman Approved — see `decisions/approvals/0001-phase1-governance-kernel.md` (approved by Gina, 2026-07-12)
 Type: Documentation and schema only. This skill is not an autonomous agent, has no model API integration, and initiates no external actions.
 
 ---
