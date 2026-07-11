@@ -11,7 +11,9 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "verify": "pnpm typecheck && pnpm test"
+    "verify": "pnpm typecheck && pnpm test",
+    "build": "tsc -p tsconfig.build.json",
+    "portfolio-review": "pnpm build && node dist/cli.js"
   },
   "dependencies": {
     "yaml": "^2.6.0",

@@ -5,6 +5,9 @@ node_modules/
 dist/
 coverage/
 
+# Derivative outputs — never canonical; promoted only via explicit writeback decision (CLAUDE.md)
+generated/
+
 # Environment and secrets — never commit credentials (CLAUDE.md: Data Boundaries)
 .env
 .env.*

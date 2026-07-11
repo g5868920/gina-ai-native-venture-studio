@@ -1,0 +1,16 @@
+# Venture registry — Gina AI-Native Venture Studio
+# Ventures are independent; their repositories hold their own canonical truth.
+# Studio integration is file- and handoff-based; external repos are read-only (CLAUDE.md).
+version: 0.1.0
+# Approved: decisions/approvals/0004-portfolio-review-foundation-v0.1.md (Gina, 2026-07-12)
+status: Chairwoman Approved
+
+ventures:
+  - id: pm-workflow
+    name: AI-Native PM Workflow
+    integration: file-handoff
+    external_repo_access: read-only
+  - id: twinko
+    name: Twinko
+    integration: file-handoff
+    external_repo_access: read-only

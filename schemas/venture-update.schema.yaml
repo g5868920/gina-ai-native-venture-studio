@@ -1,0 +1,54 @@
+# Venture update schema — canonical field specification.
+# Enforced deterministically by src/portfolio/venture-update.ts (Zod);
+# tests/portfolio-review.test.ts proves code and this file cannot drift.
+version: 0.1.0
+
+fields:
+  venture:
+    type: string
+    required: true
+    notes: Must match a venture id in governance/venture-registry.yaml.
+  reporting_period:
+    type: object
+    required: true
+    notes: "{ start: YYYY-MM-DD, end: YYYY-MM-DD }, start <= end."
+  current_status:
+    type: string
+    required: true
+    notes: Free-text status line, non-empty.
+  completed:
+    type: string-list
+    required: true
+  in_progress:
+    type: string-list
+    required: true
+  next_priorities:
+    type: string-list
+    required: true
+  decisions_needed:
+    type: string-list
+    required: true
+    notes: Items requiring a Chairwoman decision. Listing here is not approval.
+  risks:
+    type: string-list
+    required: true
+  blockers:
+    type: string-list
+    required: true
+    notes: Each blocker should state what is missing and who owns resolution.
+  dependencies:
+    type: string-list
+    required: true
+  evidence_references:
+    type: string-list
+    required: true
+    notes: File paths or links. Claims without references are treated as unverified.
+  assumptions_unknowns:
+    type: string-list
+    required: true
+    notes: Missing facts must be recorded here as unknown — never guessed.
+
+unknown_policy: >
+  Missing facts remain unknown. Empty lists render as "None reported."
+  The generator never fills gaps, invents metrics, outcomes, or evidence.
+unknown_fields: rejected
