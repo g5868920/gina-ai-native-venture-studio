@@ -2,7 +2,7 @@
 
 Date: 2026-07-12
 Public-use status: Private / not for public use (pending Chairwoman classification)
-Review status: Chairwoman Decision Required (milestone completion awaiting review)
+Review status: Chairwoman Approved — see `decisions/approvals/0005-milestone1-e2e-demo.md` (Gina, 2026-07-12)
 
 ---
 
