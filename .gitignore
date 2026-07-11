@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+coverage/
+
+# Environment and secrets — never commit credentials (CLAUDE.md: Data Boundaries)
+.env
+.env.*
+
+# OS / editor noise
+.DS_Store
+*.log

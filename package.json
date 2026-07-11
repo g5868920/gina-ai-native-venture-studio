@@ -1,0 +1,25 @@
+{
+  "name": "gina-ai-native-venture-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Repository-owned operating system for Gina AI-Native Venture Studio: governance, AI executive skills, portfolio coordination, decision preparation, and provenance.",
+  "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "verify": "pnpm typecheck && pnpm test"
+  },
+  "dependencies": {
+    "yaml": "^2.6.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

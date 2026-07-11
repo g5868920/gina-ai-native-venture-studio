@@ -1,0 +1,39 @@
+# Canonical status and approval model — Gina AI-Native Venture Studio
+# Source: CLAUDE.md "Status and Approval Integrity"; Phase 1 Chairwoman decision (2026-07-11).
+#
+# Design rule (Phase 1): there is intentionally NO transition from
+# "CEO Recommended" to "Chairwoman Approved". Approval is reachable only
+# via "Chairwoman Decision Required", and the validator additionally
+# requires an explicit approval record. This makes automatic approval
+# structurally impossible, not merely prohibited by prose.
+
+version: 0.1.0
+
+statuses:
+  - Not Started
+  - In Progress
+  - Draft Ready
+  - CEO Review Required
+  - Revision Required
+  - CEO Recommended
+  - Chairwoman Decision Required
+  - Chairwoman Approved
+  - Blocked
+  - Superseded
+
+approval:
+  status: Chairwoman Approved
+  requires_approval_record: true
+  approver: Gina
+
+transitions:
+  Not Started: [In Progress, Blocked, Superseded]
+  In Progress: [Draft Ready, Blocked, Superseded]
+  Draft Ready: [CEO Review Required, In Progress, Superseded]
+  CEO Review Required: [Revision Required, CEO Recommended, Blocked, Superseded]
+  Revision Required: [In Progress, Superseded]
+  CEO Recommended: [Chairwoman Decision Required, Revision Required, Superseded]
+  Chairwoman Decision Required: [Chairwoman Approved, Revision Required, Blocked, Superseded]
+  Chairwoman Approved: [Superseded]
+  Blocked: [In Progress, Superseded]
+  Superseded: []
