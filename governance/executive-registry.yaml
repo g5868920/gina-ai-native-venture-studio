@@ -1,0 +1,104 @@
+# Executive registry — DERIVED from executives/EXECUTIVE_OPERATING_MATRIX.md (canonical).
+# A conflict between this file and the matrix is a defect to surface, not resolve silently.
+version: 0.1.0
+# Approved: decisions/approvals/0003-executive-system-v0.1.md (Gina, 2026-07-12)
+status: Chairwoman Approved
+source_of_truth: executives/EXECUTIVE_OPERATING_MATRIX.md
+activation_states: [Active, Standby, Limited]
+output_ceiling: CEO Recommended
+
+executives:
+  - id: ceo
+    title: Chief Executive Officer
+    activation: Active
+    contract: executives/ceo/OPERATING_CONTRACT.md
+    may_approve_reserved_decisions: false
+    owns:
+      - studio-priorities
+      - executive-delegation
+      - cross-functional-synthesis
+      - decision-packets
+      - escalation
+      - portfolio-coordination
+  - id: cpo
+    title: Chief Product Officer
+    activation: Active
+    contract: executives/cpo/OPERATING_CONTRACT.md
+    may_approve_reserved_decisions: false
+    owns:
+      - product-strategy
+      - user-problems
+      - discovery
+      - research
+      - requirements
+      - prioritization
+      - roadmap
+      - product-metrics
+      - ux-ui
+      - usability
+      - product-launch-readiness
+  - id: cto
+    title: Chief Technology Officer
+    activation: Active
+    contract: executives/cto/OPERATING_CONTRACT.md
+    may_approve_reserved_decisions: false
+    owns:
+      - architecture
+      - engineering
+      - technical-feasibility
+      - ai-data-model-design
+      - security
+      - technical-privacy-controls
+      - reliability
+      - testing
+      - accessibility-implementation
+      - technical-release-readiness
+  - id: cmo
+    title: Chief Marketing Officer
+    activation: Standby
+    contract: executives/cmo/OPERATING_CONTRACT.md
+    may_approve_reserved_decisions: false
+    owns:
+      - positioning
+      - brand
+      - go-to-market
+      - content
+      - acquisition
+      - lifecycle-marketing
+  - id: cbo
+    title: Chief Business Officer
+    activation: Standby
+    contract: executives/cbo/OPERATING_CONTRACT.md
+    may_approve_reserved_decisions: false
+    owns:
+      - business-model
+      - monetization
+      - pricing-proposals
+      - partnerships
+      - sales
+      - commercial-strategy
+      - consulting-commercial-packaging
+  - id: cfo
+    title: Chief Financial Officer
+    activation: Limited
+    contract: executives/cfo/OPERATING_CONTRACT.md
+    may_approve_reserved_decisions: false
+    owns:
+      - budget
+      - runway
+      - unit-economics
+      - financial-risk
+      - pricing-validation
+      - investment-analysis
+  - id: clo
+    title: Chief Legal Officer
+    activation: Limited
+    contract: executives/clo/OPERATING_CONTRACT.md
+    may_approve_reserved_decisions: false
+    owns:
+      - legal-compliance
+      - contracts
+      - intellectual-property
+      - privacy-law
+      - terms
+      - regulatory-risk
