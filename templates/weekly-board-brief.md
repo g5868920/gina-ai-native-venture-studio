@@ -3,7 +3,14 @@
 <!-- TEMPLATE (structure reference only). Real briefs are produced deterministically
      by src/portfolio/generate-brief.ts, written ONLY under generated/board-briefs/,
      and carry the provenance header required by CLAUDE.md (Generated Outputs).
-     A brief is derivative — never a canonical decision. -->
+     A brief is derivative — never a canonical decision.
+
+     LANGUAGE POLICY (Chairwoman directive, 2026-07-12): the CEO-reviewed brief's
+     narrative content is written primarily in Traditional Chinese, keeping English
+     for precise product/technical/governance/business terms. Structural section
+     headings, status values, IDs, file paths and schema keys stay in English.
+     The deterministic generator's aggregation output is machine-anchored and
+     remains in English; the Chinese-primary layer is the CEO reviewed brief. -->
 
 > Generated: <ISO timestamp> · Skill: ceo/portfolio-review v0.1.0 · Executor: deterministic script
 > Sources: <input file paths> · Checksum: <sha256 of inputs>

@@ -30,6 +30,8 @@ Updates are venture handoffs (authority level 5, `CLAUDE.md` Source of Truth) �
 
 One brief under `generated/board-briefs/`, sections exactly per `templates/weekly-board-brief.md`, with provenance header (timestamp, sources, checksum, skill, executor, review status).
 
+**Language policy (Chairwoman directive, 2026-07-12):** CEO-facing human-readable outputs for Gina — including the reviewed board brief — are written primarily in Traditional Chinese, using English where it improves precision for product, technical, governance, or business terms (e.g. dogfood slice, first-value moment, unit economics). Tone: clear, professional, like a bilingual product/strategy working conversation; do not translate established terms awkwardly. Machine-readable fields, status values (e.g. `CEO Review Required`), IDs, file paths, schema keys, and the deterministic generator's structural section headings remain unchanged in English.
+
 ## 6. Evidence Requirements
 
 Claims carry evidence references from inputs or sit in assumptions/unknowns. Missing facts remain visibly unknown. Metrics, outcomes, and evidence are never invented — the generator is deterministic and cannot.
