@@ -1,11 +1,12 @@
 /**
  * Phase 3 — CEO Weekly Portfolio Review: deterministic pipeline tests.
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { parse } from "yaml";
 import { describe, expect, it } from "vitest";
 import { loadVentureRegistry, VENTURE_REGISTRY } from "../src/governance/venture-registry.js";
 import {
+  extractHandoffRefs,
   loadVentureUpdate,
   parseFrontmatter,
   validateVentureUpdate,
@@ -75,6 +76,37 @@ describe("venture update validation", () => {
     const raw = parseFrontmatter(readFileSync(SAMPLES[0] ?? "", "utf8")) as Record<string, unknown>;
     const bad = { ...raw, reporting_period: { start: "2026-07-12", end: "2026-07-06" } };
     expect(validateVentureUpdate(bad).ok).toBe(false);
+  });
+});
+
+describe("handoff source-reference verification", () => {
+  it("extracts every cited handoff path from the real W28 updates and all of them exist", () => {
+    for (const path of [
+      "inputs/venture-updates/2026-W28/pm-workflow.md",
+      "inputs/venture-updates/2026-W28/twinko.md",
+    ]) {
+      const result = loadVentureUpdate(readFileSync(path, "utf8"));
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        const refs = extractHandoffRefs(result.update);
+        expect(refs.length > 0).toBe(true);
+        for (const ref of refs) expect(existsSync(ref)).toBe(true);
+      }
+    }
+  });
+
+  it("detects a citation of a missing handoff file", () => {
+    const raw = parseFrontmatter(readFileSync(SAMPLES[0] ?? "", "utf8")) as Record<string, unknown>;
+    const tampered = {
+      ...raw,
+      evidence_references: ["handoffs/pm-workflow/DOES_NOT_EXIST.md"],
+    };
+    const result = validateVentureUpdate(tampered);
+    expect(result.ok).toBe(true); // schema-valid…
+    if (result.ok) {
+      const refs = extractHandoffRefs(result.update);
+      expect(refs).toContain("handoffs/pm-workflow/DOES_NOT_EXIST.md"); // …but the CLI existence check rejects it
+    }
   });
 });
 

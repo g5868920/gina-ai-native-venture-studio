@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "verify": "pnpm typecheck && pnpm test",
     "build": "tsc -p tsconfig.build.json",
-    "portfolio-review": "pnpm build && node dist/cli.js"
+    "portfolio-review": "pnpm build && node dist/cli.js",
+    "demo": "pnpm build && node dist/cli.js inputs/venture-updates/2026-W28/pm-workflow.md inputs/venture-updates/2026-W28/twinko.md"
   },
   "dependencies": {
     "yaml": "^2.6.0",

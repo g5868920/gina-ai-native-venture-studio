@@ -8,9 +8,9 @@
  * Weekly Board Brief under generated/board-briefs/. Deterministic; no
  * network, no model calls, no writes outside generated/.
  */
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { loadVentureUpdate } from "./portfolio/venture-update.js";
+import { extractHandoffRefs, loadVentureUpdate } from "./portfolio/venture-update.js";
 import { generateWeeklyBoardBrief, type BriefInput } from "./portfolio/generate-brief.js";
 
 function main(argv: string[]): number {
@@ -26,7 +26,18 @@ function main(argv: string[]): number {
     const rawContent = readFileSync(file, "utf8");
     const result = loadVentureUpdate(rawContent);
     if (result.ok) {
-      console.log(`VALID   ${file} (venture: ${result.update.venture})`);
+      const missingRefs = extractHandoffRefs(result.update).filter((ref) => !existsSync(ref));
+      if (missingRefs.length > 0) {
+        console.error(
+          `INVALID ${file}: cited handoff source(s) not found: ${missingRefs.join(", ")}. ` +
+            "An update may not rest on missing or moved sources.",
+        );
+        invalid += 1;
+        continue;
+      }
+      console.log(
+        `VALID   ${file} (venture: ${result.update.venture}; handoff sources verified: ${extractHandoffRefs(result.update).length})`,
+      );
       inputs.push({ update: result.update, sourcePath: file, rawContent });
     } else {
       console.error(`INVALID ${file}: ${result.reason}`);

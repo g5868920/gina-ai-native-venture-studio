@@ -73,3 +73,32 @@ export function loadVentureUpdate(content: string, registry: VentureRegistry = V
     return { ok: false, reason: error instanceof Error ? error.message : String(error) };
   }
 }
+
+const HANDOFF_REF = /handoffs\/[A-Za-z0-9_\-./]+\.md/g;
+
+/**
+ * Extract every handoff source path mentioned anywhere in an update.
+ * Deterministic; used to verify that cited sources actually exist,
+ * so an update can never rest on a missing or moved handoff file.
+ */
+export function extractHandoffRefs(update: VentureUpdate): string[] {
+  const strings: string[] = [update.venture, update.current_status];
+  for (const list of [
+    update.completed,
+    update.in_progress,
+    update.next_priorities,
+    update.decisions_needed,
+    update.risks,
+    update.blockers,
+    update.dependencies,
+    update.evidence_references,
+    update.assumptions_unknowns,
+  ]) {
+    strings.push(...list);
+  }
+  const refs = new Set<string>();
+  for (const s of strings) {
+    for (const match of s.match(HANDOFF_REF) ?? []) refs.add(match);
+  }
+  return [...refs].sort();
+}
