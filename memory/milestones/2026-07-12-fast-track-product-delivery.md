@@ -7,6 +7,20 @@ Owner: Gina(優先序與範圍);Studio CEO(追蹤與 handoff);product repos(實�
 
 ---
 
+## 修訂(Amendment)— 2026-07-12,Decision 0007
+
+**本記錄的 active-priority 排序已被 `decisions/approvals/0007-one-person-company-os-v1-reprioritization.md`(Gina,2026-07-12)部分取代。** 下表為現行狀態(authority level 1,高於本檔下方 fast-track 期的原始記錄):
+
+| Venture / Milestone | 現行狀態(2026-07-12,Decision 0007) |
+|---|---|
+| **One-Person Company OS v1.0** | **Primary active company milestone** — 於本 Studio repo 交付;範圍 S1–S8(見 0007) |
+| PM Workflow Control Tower | **Paused** — prototype substantially complete;進一步 UX cleanup / commit / push / dogfooding 暫停至 OS v1.0 達 DoD。暫停前先於 product repo 做一次性 local WIP commit(不 push,見 0007 §9) |
+| Twinko iOS UI prototype | **Deferred** — 延後至 OS v1.0 完成 |
+| PM Workflow dogfooding / Twinko Discovery-to-Decision | **Deferred**,非 rejected / superseded |
+
+被取代者僅為 `0006` §1、§2(誰是 primary / secondary);`0006` §3–§5 保留。**以下 fast-track 期的原始章節保留供歷史參照,不代表現行優先序。**
+
+
 ## 更新後的 venture 優先序
 
 | Venture | 優先序 | Active milestone |
