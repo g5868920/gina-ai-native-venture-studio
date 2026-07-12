@@ -14,7 +14,7 @@ The Chairwoman approves the One-Person Company OS v1.0 reprioritization:
 
 1. **One-Person Company OS v1.0 is the primary active company milestone.** The goal is to make the existing Studio usable as the file-based cockpit from which Gina *drives* the development of PM Workflow and Twinko: planning, decisions, handoffs, and review happen in the Studio; product code is implemented in each product repository (via Claude Code). The Studio does not contain product code.
 
-2. **This decision supersedes only the active-priority sequencing established by `0006` (§1 and §2).** It does not reject, delete, or invalidate the prototype work. `0006` §3–§5 remain in force.
+2. **This decision supersedes only the active-priority sequencing established in `0006` §§1–2.** It does not reject, delete, or invalidate the prototype work. All other provisions of `0006` remain in force unless explicitly contradicted by this decision.
 
 3. **PM Workflow Control Tower:** prototype implementation is substantially complete. Further UX cleanup, commit, push, and dogfooding are paused until the One-Person Company OS v1.0 milestone reaches its definition of done. The work remains valid.
 
@@ -22,7 +22,7 @@ The Chairwoman approves the One-Person Company OS v1.0 reprioritization:
 
 5. **Twinko Discovery-to-Decision and PM Workflow dogfooding:** remain deferred, not rejected or superseded.
 
-6. **Bounded Studio implementation is authorized** (partially lifting `0006` §6), subject to the hard constraints: file-based; repository-owned; single-founder usable; CLI- or conversationally-operated; built primarily from existing Studio structures; deterministic where practical; human-governed; portable across models and executors.
+6. **Bounded Studio implementation is authorized — a new, separate grant.** Independently of the supersession in §2, this decision grants a new bounded authorization to implement S1–S8 within the Venture Studio, subject to the hard constraints: file-based; repository-owned; single-founder usable; CLI- or conversationally-operated; built primarily from existing Studio structures; deterministic where practical; human-governed; portable across models and executors. This authorization does not otherwise modify `0006`.
 
 7. **Approved scope (S1–S8):**
 
