@@ -15,3 +15,6 @@ generated/
 # OS / editor noise
 .DS_Store
 *.log
+
+# Local Claude Code tool settings (not project source of truth) — .claude/skills/ IS tracked
+.claude/settings.local.json
