@@ -1,0 +1,134 @@
+# Independent engineering review — Phase 0A, round 3
+# Shape: schemas/engineering-review.schema.yaml · Gate: governance/engineering-review-gate.yaml
+#
+# PROVENANCE. Reviewer: an independent, mechanically read-only Codex session. Verdicts
+# and findings are TRANSCRIBED from its report. The `disposition` blocks are the
+# implementer's and are labelled as such.
+
+version: 0.2.2
+review_id: phase-0a-003
+review_status: BLOCKED
+reviewer: codex (independent session, read-only; worktree verified unchanged)
+reviewed_commit: uncommitted worktree at 2026-09-01 (base a2a455a)
+timestamp: "2026-09-01"
+recommended_action: FIX_AND_RERUN
+regression_risk: HIGH
+architecture_compliance: FAIL
+read_only_confirmed: true
+
+assessments:
+  project_isolation: FAIL        # canonical path correct; injected registries bypassed the schema
+  historical_operational_boundary: PASS
+  repository_safety: FAIL        # build/test unguarded; checker parity gap
+  portfolio_integrity: PASS
+  test_adequacy: INADEQUATE
+
+suite_executed_by_reviewer: false
+suite_not_run_reason: >
+  Tests created, overwrote, symlinked, and deleted fixtures under generated/, which the
+  review's read-only constraint forbids. THIS HAS NOW BEEN FIXED — see
+  implementer_additional_remediation below — so a future review can execute the suite.
+
+findings:
+  - id: F-01
+    severity: high
+    title: Injected registries bypassed canonical identifier validation
+    reviewer_verdict: NOT RESOLVED
+    evidence: >
+      Resolver APIs accept a caller-supplied VentureRegistry and called only
+      assertVentureRegistryIntegrity(); the strict Zod schema ran solely inside
+      loadVentureRegistry(). A probe injecting an active Nodi entry with
+      project_id " twinko " returned {"ok":true,"projectId":" twinko "}.
+    status: fixed
+    disposition:
+      by: implementer
+      action: FIXED — confirmed, and worse than reported
+      detail: >
+        Reproduced before fixing, and found a second shape the report did not list: an
+        uppercase id carrying an unknown extra field was also accepted. This was a genuine
+        project-authorization boundary failure, not a theoretical one, so it was fixed
+        rather than dispositioned. assertVentureRegistryIntegrity now runs the canonical
+        Zod schema before its semantic rules, so every path that can reach a write
+        decision validates shape. Six regression tests injecting malformed registries
+        (padded, uppercase, empty, unknown field, bad lifecycle) assert all three public
+        resolvers throw, plus one asserting a well-formed injected registry still works.
+  - id: F-02
+    reviewer_verdict: RESOLVED
+  - id: F-03
+    reviewer_verdict: RESOLVED
+  - id: F-04
+    reviewer_verdict: RESOLVED
+  - id: F-05
+    severity: medium
+    title: Test coverage gaps
+    reviewer_verdict: NOT RESOLVED
+    status: fixed
+    disposition:
+      by: implementer
+      action: FIXED for three of four gaps; one declined again with rationale
+      remediated:
+        - injected schema-invalid registry (7 tests)
+        - package-order test extended to the public `build` and `test` commands
+        - preflight drift test extended to a Git-origin-mismatch checkout
+      declined:
+        - item: compiled child-process symlink invocation of the CLI
+          rationale: >
+            `pnpm test` does not build, so the test would depend on a stale or absent
+            dist/ and would fail for reasons unrelated to the behaviour under test. The
+            guard's logic is covered directly by three unit tests over isDirectInvocation(),
+            including the symlink and non-normalized-path cases that produced the original
+            silent no-op defect.
+  - id: F-06
+    reviewer_verdict: RESOLVED
+  - id: NF-01
+    reviewer_verdict: RESOLVED
+  - id: NF-02
+    severity: medium
+    title: Preflight boundary incomplete at public build/test, and checker parity gap
+    reviewer_verdict: NOT RESOLVED
+    status: fixed
+    disposition:
+      by: implementer
+      action: FIXED — both halves confirmed and corrected
+      detail: >
+        (a) `build` and `test` now run `pnpm preflight` first, so every public command
+        that compiles or writes fixtures is guarded, not only demo/portfolio-review/verify.
+        (b) The parity gap was real and was mine: I had deliberately omitted the Git-origin
+        check from scripts/preflight.mjs while the compiled checker enforced it, so a
+        marker-complete checkout with a foreign origin passed the pre-build guard and was
+        refused only later. A guard that exists in one of a matched pair is a defect in the
+        pair whatever its individual value, and the drift test's "cannot drift" claim was
+        false in that dimension. preflight.mjs now mirrors all three signals, and the drift
+        test covers a real wrong-origin checkout.
+  - id: NEW-01
+    severity: nit
+    title: Stale-deletion citation pointed to the wrong amendment item
+    reviewer_verdict: OPEN
+    blocking: false
+    status: fixed
+    disposition:
+      by: implementer
+      action: FIXED — CLAUDE.md now cites 0010 Amendment §0 (the deletion clause).
+
+implementer_additional_remediation:
+  - id: TEST-SCRATCH
+    title: Test fixtures moved out of the repository
+    rationale: >
+      Three consecutive reviews could not execute the suite because tests wrote fixtures
+      under generated/. That is a standing, compounding limit on review quality, not a
+      one-off inconvenience. Fixtures now live in an OS temp directory created per run.
+    verified: >
+      `git status --porcelain` and a recursive listing of generated/ are byte-identical
+      before and after `pnpm test`; zero leftover scratch paths inside the repository.
+
+state_after_remediation:
+  tests: 103 passed / 4 suites   # 91 at round 2, 97 after round-2 remediation
+  typecheck: pass
+  build: pass
+  preflight: pass
+  suite_is_worktree_neutral: true
+  merge_ready: false
+  note: >
+    Merge-readiness is NOT declared by the implementer. This state has not been
+    independently reviewed, and the only review it has received is the one whose findings
+    it just changed. A fresh read-only review is required — and can now run the suite.

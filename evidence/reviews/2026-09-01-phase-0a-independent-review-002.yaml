@@ -1,0 +1,170 @@
+# Independent engineering review — Phase 0A, round 2
+# Shape: schemas/engineering-review.schema.yaml · Gate: governance/engineering-review-gate.yaml
+#
+# PROVENANCE. The reviewer is an independent Codex session. The findings, severities,
+# and verdicts below are TRANSCRIBED from that session's report; they are not authored
+# by the implementing session. The `disposition` block under each finding IS the
+# implementer's, and is labelled as such. Where the two differ, both are shown.
+#
+# This record exists because the gate requires a structured review result and round 1
+# produced none — F-01..F-06 had to be reconstructed from the diff, which is inference.
+
+version: 0.2.2
+review_id: phase-0a-002
+review_status: BLOCKED
+reviewer: codex (independent session, read-only)
+reviewed_commit: uncommitted worktree at 2026-09-01 (base a2a455a)
+timestamp: "2026-09-01"
+recommended_action: FIX_AND_RERUN
+regression_risk: HIGH
+architecture_compliance: FAIL
+read_only_confirmed: true      # worktree byte-identical before and after the review
+
+assessments:
+  project_isolation: PASS
+  historical_operational_boundary: PASS
+  stale_repository_protection: FAIL
+  test_adequacy: INADEQUATE
+
+# Reviewer's note, recorded verbatim in substance: the full suite was NOT executed,
+# because several tests create, overwrite, symlink, and delete paths under generated/,
+# which the review's read-only constraint forbids. Its passing checks were typecheck,
+# a --noEmit build, YAML parsing, `git diff --check`, and targeted runtime probes.
+suite_executed_by_reviewer: false
+
+original_findings:
+  - id: F-01
+    title: Identity namespace integrity
+    reviewer_verdict: RESOLVED
+  - id: F-02
+    severity: high
+    title: Archived checkout's own CLI has no preflight and remains executable
+    reviewer_verdict: NOT RESOLVED
+    status: fixed
+    resolved_on: "2026-09-01"
+    resolution: >
+      REMEDIATED BY REMOVAL. Escalated to the Founder because no change to this repository
+      could reach code inside another checkout; Gina authorized Option 1 and the stale
+      checkout was deleted. Both the archived and original paths verified absent; the full
+      suite passes without the sibling. Not a risk acceptance — a High finding may never be
+      risk-accepted (0010 §11) — the hazard was eliminated.
+    disposition:
+      by: implementer
+      action: ESCALATED — not fixable from this repository; then removed on Founder authorization
+      rationale: >
+        The finding is factually correct. The archived copy contains its own pre-Phase-0A
+        code, frozen at 7722ddb; running it there executes that old CLI, which has no
+        preflight. No change to the canonical repository can alter code inside another
+        checkout. The only real remediations are (a) delete the archive, or (b) modify
+        files inside it — both outside the authorized worktree and both requiring the
+        Founder's decision, which decision 0010 records as still open (§11).
+        Blast radius is bounded: that CLI can only write a derivative, non-canonical
+        brief into its own generated/ directory, inside a directory named
+        _ARCHIVED_DO_NOT_USE__ containing a root STALE_REPOSITORY_DO_NOT_USE.md.
+        It cannot reach canonical state. Recorded as a residual risk, NOT dispositioned
+        as accepted — a High finding may never be risk-accepted (0010 §11).
+  - id: F-03
+    title: Historical / operational separation
+    reviewer_verdict: RESOLVED
+  - id: F-04
+    title: Operational portfolio excludes superseded identities
+    reviewer_verdict: RESOLVED
+  - id: F-05
+    severity: medium
+    title: Test adequacy — missing production-path cases
+    reviewer_verdict: NOT RESOLVED
+    status: partially_fixed
+    disposition:
+      by: implementer
+      action: PARTIALLY REMEDIATED; two sub-items declined with rationale
+      remediated:
+        - duplicate active-venture inputs (added, via NF-01)
+        - distinct-project coverage calculation (added, via NF-01)
+        - preflight ordering in the documented package entrypoints (added, via NF-02)
+        - preflight refuses without writing, and agrees with the compiled checker (added)
+      declined:
+        - item: a test that executes the archived checkout's CLI
+          rationale: >
+            It would make this suite depend on a sibling directory that the Founder may
+            delete at any time, and would assert on code this repository does not own.
+            An environment-dependent test that breaks when the hazard is REMOVED is a
+            worse signal than no test. The hazard is recorded under F-02 instead.
+        - item: a child-process symlink invocation of the CLI
+          rationale: >
+            `pnpm test` does not build, so such a test would depend on a stale or absent
+            dist/. The guard's logic is covered directly by three unit tests over
+            isDirectInvocation(), including the symlink and non-normalized-path cases
+            that caused the original defect.
+  - id: F-06
+    severity: medium
+    title: Documentation inconsistent with implemented state
+    reviewer_verdict: NOT RESOLVED
+    status: fixed
+    disposition:
+      by: implementer
+      action: FIXED — all three cited inconsistencies corrected
+      detail:
+        - docs/COMPANY_OS_ARCHITECTURE_V0_2.md header said v0.2.1 while §16.5.1 was
+          labelled v0.2.2 — header now records the 0010 amendment as v0.2.2.
+        - migration report described the §E-6/§E-7 gaps as still-open prerequisites and
+          the loader as still stripping fields — now carries current status, with the
+          original findings preserved beneath.
+        - evidence 0010 "alternatives" said renaming the duplicate was rejected while its
+          own amendment recorded the rename — now distinguishes deletion (still rejected)
+          from the rename that was actually performed.
+
+new_findings:
+  - id: NF-01
+    severity: medium
+    title: Portfolio coverage counted input rows, not distinct canonical projects
+    blocking: true
+    evidence: >
+      Two valid Nodi inputs and no Twinko input rendered "Ventures reporting: 2 of 2
+      active." Reproduced independently by the implementer before fixing.
+    impact: A board brief could falsely claim complete active-portfolio coverage.
+    status: fixed
+    disposition:
+      by: implementer
+      action: FIXED — not risk-accepted
+      rationale: >
+        This produced an unsupported claim in a governance artifact, which the repository
+        forbids outright; it was not a candidate for a bounded policy disposition.
+      remediation: >
+        Operational generation now fails closed on more than one update per canonical
+        project, counts coverage in DISTINCT projects, and names any active venture that
+        did not report ("absence of a report is not a status"). The CLI reports the
+        rejection in its normal invalid-input form rather than an unhandled stack trace.
+        Two regression tests added.
+  - id: NF-02
+    severity: medium
+    title: Documented entrypoints built before the canonical preflight could refuse
+    blocking: true
+    evidence: "package.json: `demo` and `portfolio-review` ran `pnpm build` before the guarded CLI."
+    impact: >
+      A copied checkout had dist/ written before anything refused to run there,
+      contradicting the CLI's own "refuse before touching anything" claim.
+    status: fixed
+    disposition:
+      by: implementer
+      action: FIXED — not risk-accepted
+      remediation: >
+        Added scripts/preflight.mjs — plain ESM, no build step, so it can run before the
+        build that produces the compiled guard. Wired into `preflight`, `verify`,
+        `portfolio-review`, and `demo` ahead of `pnpm build`. Policy stays single-sourced
+        in governance/canonical-repository.yaml; a drift test asserts the script and the
+        compiled checker classify the same paths identically. Verified: refusing the
+        archive exits 3 and creates no dist/.
+
+implementer_state_after_remediation:
+  tests: 97 passed / 4 suites   # was 91 at review time
+  typecheck: pass
+  build: pass
+  preflight: pass
+  merge_ready: false
+  blocking_open: []
+  note: >
+    Every finding from this review is now either fixed or, for F-02, eliminated by the
+    Founder-authorized removal of the stale checkout. Merge-readiness is NOT declared by
+    the implementer: this state has not been independently reviewed, and the only review
+    it has received is the one whose findings it just changed. A fresh, read-only
+    independent review of this final state is required.

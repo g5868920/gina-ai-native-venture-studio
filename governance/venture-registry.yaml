@@ -1,16 +1,60 @@
 # Venture registry — Gina AI-Native Venture Studio
 # Ventures are independent; their repositories hold their own canonical truth.
 # Studio integration is file- and handoff-based; external repos are read-only (CLAUDE.md).
-version: 0.1.0
-# Approved: decisions/approvals/0004-portfolio-review-foundation-v0.1.md (Gina, 2026-07-12)
+#
+# v0.2.0 — Approved: decisions/approvals/0008-company-os-v0-2-ai-native-operating-model.md (Gina, 2026-09-01)
+#   §1 The active ventures are Twinko and Nodi. Nodi is the current venture identity of the
+#       venture formerly registered as `pm-workflow` ("AI-Native PM Workflow"); the PM Workflow
+#       work is Nodi's product lineage, not a separate venture. No third venture exists.
+#   §2 Twinko is NO LONGER a dogfooding / internal-customer / validation dependency of Nodi,
+#       and Nodi does not depend on Twinko for product validation.
+#   §9 Every project-scoped entity carries a stable project_id. These are the canonical values.
+#
+# v0.1.0 — Approved: decisions/approvals/0004-portfolio-review-foundation-v0.1.md (Gina, 2026-07-12)
+version: 0.2.0
 status: Chairwoman Approved
 
+# Phase 0A mechanically validates every field below, lifecycle/supersession integrity,
+# and the globally unambiguous venture-id / active-project-id namespace.
+
 ventures:
-  - id: pm-workflow
-    name: AI-Native PM Workflow
-    integration: file-handoff
-    external_repo_access: read-only
   - id: twinko
     name: Twinko
+    project_id: twinko
+    lifecycle: active
+    repository: twinko-app
     integration: file-handoff
     external_repo_access: read-only
+
+  - id: nodi
+    name: Nodi
+    project_id: nodi
+    lifecycle: active
+    repository: pm-workflow-copilot
+    integration: file-handoff
+    external_repo_access: read-only
+    lineage: >
+      Current venture identity of the venture registered in v0.1.0 as `pm-workflow`
+      ("AI-Native PM Workflow"). The PM Workflow product work forms Nodi's historical
+      product lineage. Evidence: pm-workflow-copilot/docs/v2/nodi/ (current specs) and
+      commit 7557ef6. The product repository still names itself "AI-Native Product
+      Workflow Copilot" in its own CLAUDE.md and docs/architecture-boundaries.md —
+      reconciling that is that repository's own reserved decision, not a Studio edit
+      (0008, Remaining Founder Decisions §2).
+
+  - id: pm-workflow
+    name: AI-Native PM Workflow
+    project_id: nodi
+    lifecycle: superseded
+    superseded_by: nodi
+    superseded_on: "2026-09-01"
+    superseded_by_decision: decisions/approvals/0008-company-os-v0-2-ai-native-operating-model.md
+    repository: pm-workflow-copilot
+    integration: file-handoff
+    external_repo_access: read-only
+    retention_reason: >
+      Retained as a superseded identity alias, not an active venture. Historical venture
+      updates under inputs/venture-updates/ and samples/venture-updates/ cite
+      `venture: pm-workflow` and must remain valid; history is preserved, never deleted
+      (CLAUDE.md — do not silently rewrite approved historical documents). New venture
+      updates must use `nodi`.

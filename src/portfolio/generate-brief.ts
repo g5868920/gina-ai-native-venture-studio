@@ -5,14 +5,32 @@
  * Structure: templates/weekly-board-brief.md.
  */
 import { createHash } from "node:crypto";
-import { VENTURE_REGISTRY, type VentureRegistry } from "../governance/venture-registry.js";
+import {
+  VENTURE_REGISTRY,
+  activeVentures,
+  assertVentureRegistryIntegrity,
+  type VentureRegistry,
+} from "../governance/venture-registry.js";
+import { resolveProjectScopeForWrite } from "../governance/project-identity.js";
 import type { VentureUpdate } from "./venture-update.js";
 
-export interface BriefInput {
+interface BaseBriefInput {
   update: VentureUpdate;
   sourcePath: string;
   rawContent: string;
 }
+
+export interface OperationalBriefInput extends BaseBriefInput {
+  writable: true;
+  projectId: string;
+}
+
+export interface HistoricalBriefInput extends BaseBriefInput {
+  writable: false;
+  lineage: { canonicalProjectId: string; historicalIdentity: boolean };
+}
+
+export type BriefInput = OperationalBriefInput | HistoricalBriefInput;
 
 export interface BriefOptions {
   /** Injectable clock for deterministic tests. */
@@ -24,6 +42,10 @@ export interface BriefResult {
   markdown: string;
   /** Repo-relative output path under generated/ (the only allowed destination). */
   outputPath: string;
+}
+
+export interface HistoricalBriefResult {
+  markdown: string;
 }
 
 const SKILL_ID = "ceo/portfolio-review v0.1.0";
@@ -39,17 +61,61 @@ function addDaysIso(isoDate: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-export function generateWeeklyBoardBrief(inputs: BriefInput[], options: BriefOptions = {}): BriefResult {
+function renderWeeklyBoardBrief(
+  inputs: BriefInput[],
+  mode: "operational" | "historical",
+  options: BriefOptions = {},
+): { markdown: string; periodEnd: string } {
   if (inputs.length === 0) throw new Error("No validated venture updates provided.");
   const registry = options.registry ?? VENTURE_REGISTRY;
+  assertVentureRegistryIntegrity(registry);
   const now = options.now ?? new Date();
+  const portfolioVentures = mode === "operational" ? activeVentures(registry) : registry.ventures;
+  const activeIds = new Set(activeVentures(registry).map((venture) => venture.id));
+
+  if (mode === "operational") {
+    // NF-01: coverage is counted in DISTINCT canonical projects, never in input rows.
+    // Two updates for the same project previously rendered "2 of 2 active" while an
+    // active venture had not reported at all — a brief that overstates portfolio
+    // coverage is exactly the kind of unsupported claim this repository forbids.
+    // Fail closed: at most one operational update per canonical project.
+    const seenProjects = new Map<string, string>();
+    for (const input of inputs) {
+      if (!input.writable) throw new Error("Historical input cannot authorize operational portfolio generation.");
+      const scope = resolveProjectScopeForWrite(
+        { identity: input.update.venture, projectId: input.projectId },
+        registry,
+      );
+      if (!scope.ok) throw new Error(`Operational portfolio input is not write-authorized: ${scope.reason}`);
+      const previous = seenProjects.get(input.projectId);
+      if (previous !== undefined) {
+        throw new Error(
+          `Operational portfolio input contains more than one update for project "${input.projectId}" ` +
+            `(${previous}, ${input.sourcePath}). One update per canonical project — coverage is counted in ` +
+            "distinct projects, and a duplicate would silently overstate it.",
+        );
+      }
+      seenProjects.set(input.projectId, input.sourcePath);
+    }
+    const nonActive = inputs.map((input) => input.update.venture).filter((id) => !activeIds.has(id));
+    if (nonActive.length > 0) {
+      throw new Error(
+        `Operational portfolio input contains non-active venture identity: ${[...new Set(nonActive)].join(", ")}.`,
+      );
+    }
+    // NF-01: coverage must be counted in DISTINCT canonical projects, never in input
+    // rows. Two updates for the same project previously rendered "2 of 2 active" while
+    // an active venture had not reported at all — a brief that overstates portfolio
+    // coverage is exactly the kind of unsupported claim this repository forbids.
+    // Fail closed: one operational update per canonical project.
+  }
 
   // Deterministic order: registry order.
-  const order = new Map(registry.ventures.map((v, i) => [v.id, i] as const));
+  const order = new Map(portfolioVentures.map((v, i) => [v.id, i] as const));
   const sorted = [...inputs].sort(
     (a, b) => (order.get(a.update.venture) ?? 99) - (order.get(b.update.venture) ?? 99),
   );
-  const nameOf = (id: string): string => registry.ventures.find((v) => v.id === id)?.name ?? id;
+  const nameOf = (id: string): string => portfolioVentures.find((v) => v.id === id)?.name ?? id;
 
   const periodStart = sorted.map((i) => i.update.reporting_period.start).sort()[0] ?? "";
   const periodEnd = sorted.map((i) => i.update.reporting_period.end).sort().at(-1) ?? "";
@@ -64,7 +130,7 @@ export function generateWeeklyBoardBrief(inputs: BriefInput[], options: BriefOpt
   const blockers = sorted.flatMap((i) => i.update.blockers.map((b) => ({ v: i.update.venture, b })));
 
   const otherVentureTokens = (selfId: string): string[] =>
-    registry.ventures.filter((v) => v.id !== selfId).flatMap((v) => [v.id.toLowerCase(), v.name.toLowerCase()]);
+    portfolioVentures.filter((v) => v.id !== selfId).flatMap((v) => [v.id.toLowerCase(), v.name.toLowerCase()]);
   const isCross = (dep: string, selfId: string): boolean => {
     const low = dep.toLowerCase();
     return otherVentureTokens(selfId).some((t) => low.includes(t));
@@ -77,7 +143,21 @@ export function generateWeeklyBoardBrief(inputs: BriefInput[], options: BriefOpt
   lines.push(`> Review status: CEO Review Required — generated output, derivative, NOT canonical. Recommendations are not approvals.`, "");
 
   lines.push("## Executive Summary", "");
-  lines.push(`Ventures reporting: ${sorted.length} of ${registry.ventures.length} registered.`, "");
+  if (mode === "operational") {
+    // Counted in distinct canonical projects (NF-01), and any active project that did
+    // not report is named rather than silently absent.
+    const reported = new Set(sorted.map((i) => i.update.venture));
+    const missing = activeVentures(registry).filter((v) => !reported.has(v.id));
+    lines.push(`Ventures reporting: ${reported.size} of ${portfolioVentures.length} active.`, "");
+    if (missing.length > 0) {
+      lines.push(
+        `Not reporting this period: ${missing.map((v) => v.name).join(", ")} — absence of a report is not a status.`,
+        "",
+      );
+    }
+  } else {
+    lines.push(`Historical records rendered: ${sorted.length}. Active portfolio: ${activeIds.size} projects.`, "");
+  }
   for (const i of sorted) lines.push(`- **${nameOf(i.update.venture)}** — ${i.update.current_status}`);
   lines.push("", `Totals from inputs: ${decisions.length} decision(s) needed, ${risks.length} risk(s), ${blockers.length} blocker(s). Nothing in this brief is invented; missing facts remain unknown.`, "");
 
@@ -132,6 +212,23 @@ export function generateWeeklyBoardBrief(inputs: BriefInput[], options: BriefOpt
 
   return {
     markdown: lines.join("\n"),
-    outputPath: `generated/board-briefs/weekly-board-brief-${periodEnd}.md`,
+    periodEnd,
   };
+}
+
+/** Generate an operational portfolio artifact from active-project inputs only. */
+export function generateWeeklyBoardBrief(inputs: OperationalBriefInput[], options: BriefOptions = {}): BriefResult {
+  const rendered = renderWeeklyBoardBrief(inputs, "operational", options);
+  return {
+    markdown: rendered.markdown,
+    outputPath: `generated/board-briefs/weekly-board-brief-${rendered.periodEnd}.md`,
+  };
+}
+
+/** Render existing historical records in memory. No writable output path is returned. */
+export function renderHistoricalWeeklyBoardBrief(
+  inputs: HistoricalBriefInput[],
+  options: BriefOptions = {},
+): HistoricalBriefResult {
+  return { markdown: renderWeeklyBoardBrief(inputs, "historical", options).markdown };
 }

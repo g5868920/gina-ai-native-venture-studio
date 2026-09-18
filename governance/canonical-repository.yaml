@@ -1,0 +1,80 @@
+# Canonical repository assertion — Gina AI-Native Venture Studio
+# Approved: decisions/approvals/0010-phase-0a-canonical-identity-and-registry-hardening.md (Gina, 2026-09-01) §10
+# Loader: src/governance/canonical-repo.ts · Narrative: CLAUDE.md "Canonical repository"
+#
+# WHY THIS FILE EXISTS
+# This file lets any session answer one question mechanically:
+# "am I in the canonical Studio repository?"
+#
+# The stale duplicate that motivated it has been DELETED (see known_stale_copies).
+# The detection rules below are retained deliberately: they guard against ANY future
+# copy, not only the one that has been removed.
+#
+# READ-ONLY ASSERTION. The loader never deletes, moves, or modifies another checkout.
+
+version: 0.2.2
+status: Chairwoman Approved
+
+canonical:
+  repository_name: gina-ai-native-venture-studio
+  remote: https://github.com/g5868920/gina-ai-native-venture-studio.git
+  # A checkout missing ANY of these is not a current canonical checkout. These paths are
+  # chosen because they were added at or after Company OS v0.2 — a clone predating v0.2
+  # cannot have them, which is precisely the failure mode being detected.
+  marker_files:
+    - governance/canonical-repository.yaml
+    - governance/autonomy-model.yaml
+    - decisions/approvals/0008-company-os-v0-2-ai-native-operating-model.md
+    - docs/COMPANY_OS_ARCHITECTURE_V0_2.md
+
+# A directory whose name ends with one of these is a copy, not the canonical checkout.
+# macOS Finder and common duplication tools produce exactly these suffixes.
+stale_directory_suffixes:
+  - " 2"
+  - " 3"
+  - " copy"
+  - " Copy"
+  - "-copy"
+  - " (Copy)"
+  - " backup"
+
+stale_directory_prefixes:
+  - "_ARCHIVED_DO_NOT_USE__"
+
+known_stale_copies:
+  # Retained as provenance for a REMOVED copy, not as a live hazard. Nothing in this
+  # repository reads or depends on this path; the full suite passes with it absent.
+  - path: "../_ARCHIVED_DO_NOT_USE__gina-ai-native-venture-studio_2"
+    archived_from: "../gina-ai-native-venture-studio 2"
+    status: deleted
+    removed_on: "2026-09-01"
+    removal_authorized_by: >
+      Explicit Founder decision of 2026-09-01 selecting Option 1 for review finding F-02,
+      scoped as targeted removal of a known stale and unsafe checkout — NOT a general
+      repository-cleanup authorization.
+    pre_deletion_verification: >
+      Immediately before deletion: `git log origin/main..HEAD` empty (no commits absent
+      from canonical); only branch `main`; no stashes; three untracked paths, of which
+      two were earlier drafts of files already committed in canonical (SKILL.md 78 lines
+      vs canonical 117) and one was the warning file added during archiving.
+    observed_on: "2026-09-01"
+    head_commit: 7722ddb
+    behind_canonical_by: 1 commit (canonical HEAD was a2a455a at observation)
+    unique_commits: none
+    # Verified read-only: `git log origin/main..HEAD` in the duplicate returned nothing,
+    # so it holds no commit that the canonical repository lacks.
+    untracked_content: >
+      Two untracked files exist there: .claude/skills/ceo/SKILL.md and
+      evidence/records/0007-ceo-wake-skill.md. Both are EARLIER DRAFTS of files that are
+      already committed in canonical (commit a2a455a); the canonical versions are strict
+      supersets — the committed SKILL.md is 117 lines and adds the executive-routing
+      section absent from the 78-line draft. No content was found there that is absent
+      from canonical.
+    also_present: a stale .git/index.lock
+    warning_file: STALE_REPOSITORY_DO_NOT_USE.md
+    disposition: >
+      DELETED 2026-09-01 under explicit Founder authorization, remediating review finding
+      F-02 (the archived checkout's own pre-Phase-0A CLI had no preflight and remained
+      executable — a defect no change to this repository could reach). Both the archived
+      path and the original "gina-ai-native-venture-studio 2" path were verified absent
+      afterwards.

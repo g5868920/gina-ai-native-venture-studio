@@ -1,0 +1,142 @@
+# Independent Engineering Review Gate — Gina AI-Native Venture Studio
+# Approved: decisions/approvals/0009-cross-model-deliberation-and-independent-engineering-review.md (Gina, 2026-09-01)
+# Canonical narrative: docs/COMPANY_OS_ARCHITECTURE_V0_2.md §16
+# Output shape: schemas/engineering-review.schema.yaml
+#
+# CORE RULE: the model/agent that implements code must not be the sole reviewer of it.
+#
+# This file is a specification. No enforcement code exists yet.
+
+version: 0.2.1
+status: Chairwoman Approved
+
+core_rule: implementing-model-must-not-be-sole-reviewer
+rationale: reduce-self-review-bias
+
+roles:
+  implementer:
+    id: claude-code
+    owns:
+      - coding
+      - refactoring
+      - implementation-tests
+      - local-build
+      - self-qa
+      - remediation
+  independent_reviewer:
+    id: codex
+    owns:
+      - code-review
+      - specification-to-diff-comparison
+      - regression-analysis
+      - edge-case-analysis
+      - test-adequacy
+      - architecture-compliance
+      - security-oriented-review
+      - independent-test-and-qa-execution-where-supported
+      - verification-of-implementer-remediation
+    implements_own_findings_by_default: false
+
+cycle: implementer-builds -> reviewer-challenges -> implementer-fixes -> reviewer-verifies
+
+flow:
+  - approved-spec-or-issue
+  - claude-code-implementation
+  - claude-generated-tests
+  - claude-self-qa
+  - deterministic-build-test-lint-static-checks
+  - independent-codex-review
+  - independent-codex-qa
+  - findings-returned-to-claude
+  - claude-remediation
+  - deterministic-verification
+  - codex-re-review-when-required
+  - engineering-gate-result
+
+review_status_values: [PASS, PASS_WITH_FINDINGS, BLOCKED]
+
+severity_policy:
+  critical: blocking
+  high: blocking
+  medium: fix-or-bounded-policy-disposition
+  low: non-blocking-unless-several-together-indicate-a-material-systemic-issue
+  risk_acceptance:
+    # RESOLVED by decisions/approvals/0010-*.md §11 (closes the 0009 ambiguity).
+    # The AI CTO/CEO may perform a POLICY-BASED OPERATIONAL DISPOSITION of a Medium
+    # finding inside an already approved bounded-risk envelope. This is NOT equivalent
+    # to human approval and creates no new approval authority.
+    permitted_for: [medium]
+    authority: [ai-cto, ai-ceo]
+    kind: bounded-policy-disposition
+    equivalent_to_human_approval: false
+    requires: [recorded-attributed-disposition, stated-reason, documented-residual-risk]
+    never_permitted_for: [critical, high]
+    # ALL must hold. Any single unsatisfied condition escalates to the Founder or to
+    # qualified human review — there is no partial-credit disposition.
+    bounded_risk_envelope:
+      - internal-only-impact
+      - reversible
+      - no-founder-reserved-decision-involved
+      - no-legal-implication
+      - no-privacy-implication
+      - no-safety-implication
+      - no-sensitive-data-implication
+      - no-material-security-implication
+      - no-payment-or-pricing-implication
+      - no-material-financial-commitment
+      - no-external-customer-or-partner-commitment
+      - no-public-claim
+      - no-production-high-blast-radius-change
+      - no-irreversible-data-migration
+      - within-approved-product-scope
+      - within-approved-architecture
+      - residual-risk-explicitly-documented
+    on_any_condition_unsatisfied: escalate-to-founder-or-qualified-human-review
+    # Binding terminology. An AI disposition is never described as any of these.
+    prohibited_descriptions:
+      - human-approval
+      - founder-approval
+      - formal-sign-off
+
+merge_ready_requires:
+  - deterministic-required-checks-pass
+  - no-unresolved-critical-findings
+  - no-unresolved-high-findings
+  - independent-codex-review-gate-passes
+
+merge_authority:
+  # Merge-ready is NOT merge. Unchanged by this amendment.
+  action_class: commit-push-merge-or-release
+  level: founder_reserved                    # governance/autonomy-model.yaml
+  autonomous_production_merge: disabled
+  autonomous_deployment: disabled
+  autopilot: disabled-unless-separately-approved
+
+high_risk_areas_requiring_human_or_professional_review:
+  # Independent AI review does NOT satisfy these. Route via the existing
+  # Founder-reserved / qualified-review framework (constitution/AUTHORITY.md §2).
+  - authentication-and-authorization
+  - secrets
+  - payments
+  - sensitive-user-data
+  - deletion-and-retention
+  - production-database-migrations
+  - privacy-and-security-policy
+  - safety-critical-behaviour
+  - production-infrastructure
+  - irreversible-or-high-blast-radius-changes
+
+observability:
+  per_gate_records: [reviewer, reviewed_commit_or_diff, cost, wall_time, review_status, findings_by_severity]
+  raw_pr_detail_on_default_dashboard: false   # drill-down only (architecture §8.1)
+
+prohibited:
+  - describing-an-ai-disposition-as-human-or-founder-approval-or-sign-off
+  - dispositioning-a-medium-finding-that-fails-any-bounded-risk-envelope-condition
+  - implementer-as-sole-reviewer
+  - reviewer-implementing-its-own-findings-by-default
+  - merging-with-unresolved-critical-or-high-findings
+  - accepting-a-medium-finding-without-recorded-attributed-acceptance
+  - treating-a-passing-gate-as-authorization-to-merge-push-release-or-deploy
+  - using-ai-review-to-bypass-human-review-in-a-high-risk-area
+  - silently-downgrading-a-finding-severity-to-clear-a-gate

@@ -1,0 +1,98 @@
+# Independent engineering review — Phase 0A, round 4
+# Shape: schemas/engineering-review.schema.yaml · Gate: governance/engineering-review-gate.yaml
+#
+# PROVENANCE. Reviewer: an independent, mechanically read-only Codex session that
+# EXECUTED the full suite for the first time (rounds 1–3 could not, because tests then
+# wrote fixtures inside the repository). Verdicts are TRANSCRIBED from its report;
+# `disposition` blocks are the implementer's and are labelled as such.
+
+version: 0.2.2
+review_id: phase-0a-004
+review_status: PASS_WITH_FINDINGS
+reviewer: codex (independent session, read-only; worktree fingerprints identical before/after)
+reviewed_commit: uncommitted worktree at 2026-09-01, pre-R4 remediation (base a2a455a)
+timestamp: "2026-09-01"
+recommended_action: MERGE_READY
+regression_risk: LOW
+architecture_compliance: PASS
+
+assessments:
+  project_isolation: PASS
+  historical_operational_boundary: PASS
+  portfolio_integrity: PASS
+  repository_safety: PASS
+  test_adequacy: ADEQUATE
+
+suite_executed_by_reviewer: true          # first round in which this was possible
+suite_result: 103 passed / 4 suites
+worktree_neutrality_verified_by_reviewer: >
+  Git status identical; tracked-diff and untracked-manifest fingerprints identical
+  before and after the run. No repository content or Git state changed.
+
+prior_findings:
+  - { id: F-01,   reviewer_verdict: RESOLVED }
+  - { id: F-02,   reviewer_verdict: RESOLVED }
+  - { id: F-03,   reviewer_verdict: RESOLVED }
+  - { id: F-04,   reviewer_verdict: RESOLVED }
+  - { id: F-05,   reviewer_verdict: RESOLVED }   # declined symlink test accepted as immaterial
+  - { id: F-06,   reviewer_verdict: RESOLVED }
+  - { id: NF-01,  reviewer_verdict: RESOLVED }
+  - { id: NF-02,  reviewer_verdict: RESOLVED }
+  - { id: NEW-01, reviewer_verdict: RESOLVED }
+
+new_findings:
+  - id: R4-01
+    severity: low
+    blocking: false
+    title: Missing CLI input file produced an unhandled stack trace
+    evidence: >
+      readFileSync ran outside the CLI's error handling; `node dist/cli.js <missing>`
+      exited 1 with an uncaught ENOENT stack trace instead of the normal
+      "INVALID <file>: …" report. Reproduced by the implementer before fixing.
+    status: fixed
+    disposition:
+      by: implementer
+      action: FIXED — not dispositioned
+      rationale: >
+        Non-blocking, but the CLI states a legible invalid-input contract and this broke
+        it. A five-line fix is cheaper and more honest than a recorded risk acceptance.
+      remediation: >
+        Each input read is wrapped per file; an unreadable path reports
+        "INVALID <file>: cannot read input — …", increments the invalid count, and
+        preserves the no-output-on-any-invalid-input rule. One CLI test asserts the exit
+        code, the message, and the ABSENCE of a raw stack trace.
+  - id: R4-02
+    severity: nit
+    blocking: false
+    title: Test suite left its temporary scratch root behind
+    evidence: >
+      SCRATCH was created with mkdtempSync at module load with no suite-level cleanup;
+      four empty studio-phase0a-* directories had accumulated in the OS temp directory.
+    status: fixed
+    disposition:
+      by: implementer
+      action: FIXED — afterAll removes the scratch root
+      verification: >
+        Stale directories cleared, then a full run left zero. The suite is now neutral to
+        the whole filesystem, not only to the worktree.
+
+state_after_r4_remediation:
+  tests: 104 passed / 4 suites    # 103 at review time, +1 for R4-01
+  typecheck: pass
+  build: pass
+  preflight: pass
+  suite_worktree_neutral: true
+  suite_filesystem_neutral: true
+  merge_ready: not_declared_by_implementer
+  delta_since_reviewed_state: >
+    TWO NON-BLOCKING FIXES ONLY — R4-01 (CLI input-read error handling) and R4-02 (test
+    scratch cleanup), plus one new test. No change to identity resolution, write
+    authorization, project isolation, the historical/operational boundary, portfolio
+    integrity, the preflight, or any governance artifact.
+  note: >
+    The reviewer recommended MERGE_READY for the state it reviewed. This state is that
+    state plus the delta above, so the artifact on disk is no longer byte-identical to
+    the reviewed one. The implementer does not declare merge-readiness; merge authority
+    is founder_reserved (governance/autonomy-model.yaml). Gina decides whether to accept
+    the round-4 PASS together with this recorded delta, or to require a confirmatory
+    re-review scoped to it.

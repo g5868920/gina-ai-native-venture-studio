@@ -4,6 +4,8 @@ Version: 0.1.0
 Status: Chairwoman Approved — see `decisions/approvals/0003-executive-system-v0.1.md` (approved by Gina, 2026-07-12)
 Sources: `CLAUDE.md`, `constitution/AUTHORITY.md`, `governance/status-model.yaml`, `executives/ceo/OPERATING_CONTRACT.md`
 
+**Amendment — 2026-09-01, Company OS v0.2** (`decisions/approvals/0008-company-os-v0-2-ai-native-operating-model.md`, Gina): the roles, activation states, ownership table, boundaries, and output ceiling below are **unchanged and still canonical**. One clause is amended: §1's "never autonomous agents" is partially superseded. v0.2 permits **bounded** functional agents under a single AI CEO, and those agents are **runtime instantiations of these same roles**, each carrying its role's `OPERATING_CONTRACT.md` as its accountability boundary. No role is renamed, deleted, merged, or newly instantiated (`0007` §7 S6, preserved). Agents adopt a role for a bounded task and drop it — persistent personas remain prohibited, as do agent-to-agent chains that bypass the CEO. Authority comes from `governance/autonomy-model.yaml`, resolved per action, never from the role. First-slice mapping (Product→CPO, Engineering→CTO, Research/Strategy→CEO with CPO research input) is in `docs/COMPANY_OS_ARCHITECTURE_V0_2.md` §1.1; mappings for Design, Growth, Data, Finance/Operations, and Legal/Trust are **open Founder decisions and must not be assumed**.
+
 This matrix is the **canonical source of truth** for the executive system. `governance/executive-registry.yaml`, the individual role contracts, and `executives/HANDOFF_RULES.md` are derivations; any conflict with this file is a defect to surface, never to resolve silently.
 
 ---
