@@ -5,6 +5,7 @@
 import { z } from "zod";
 import { parse } from "yaml";
 import { VENTURE_REGISTRY, type VentureRegistry } from "../governance/venture-registry.js";
+import { resolveIdentity, resolveProjectScopeForWrite } from "../governance/project-identity.js";
 
 const DateStr = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD");
 const StrList = z.array(z.string().min(1));
@@ -28,8 +29,39 @@ export const VentureUpdateSchema = z
 
 export type VentureUpdate = z.infer<typeof VentureUpdateSchema>;
 
-export type UpdateResult =
-  | { ok: true; update: VentureUpdate }
+/**
+ * Why an update is being loaded. Phase 0A — decisions/approvals/0010-*.md §6.
+ *
+ * - `operational` (DEFAULT, fails closed): a new venture update entering the
+ *   Studio. It must target an ACTIVE canonical project. A superseded identity is
+ *   rejected outright and is never silently rewritten to its successor.
+ * - `historical`: reading a record that already exists. Superseded identities are
+ *   readable, because history stays readable — the 2026-W28 updates cite
+ *   `pm-workflow`, and rewriting them to say otherwise would falsify the record.
+ *
+ * The default is `operational` deliberately: a caller that has not thought about
+ * which one it is should get the safe answer.
+ */
+export type OperationalUpdateResult =
+  | {
+      ok: true;
+      intent: "operational";
+      writable: true;
+      update: VentureUpdate;
+      /** Authorization scope for an operational mutation. */
+      projectId: string;
+    }
+  | { ok: false; reason: string };
+
+export type HistoricalUpdateResult =
+  | {
+      ok: true;
+      intent: "historical";
+      writable: false;
+      update: VentureUpdate;
+      /** Navigation and rendering metadata only. Never write authorization. */
+      lineage: { canonicalProjectId: string; historicalIdentity: boolean };
+    }
   | { ok: false; reason: string };
 
 /** Extract the YAML frontmatter block from a venture-update markdown file. */
@@ -42,10 +74,9 @@ export function parseFrontmatter(content: string): unknown {
   return parse(match[1] ?? "", { schema: "failsafe" });
 }
 
-export function validateVentureUpdate(
-  raw: unknown,
-  registry: VentureRegistry = VENTURE_REGISTRY,
-): UpdateResult {
+type ParsedUpdate = { ok: true; update: VentureUpdate } | { ok: false; reason: string };
+
+function parseVentureUpdate(raw: unknown): ParsedUpdate {
   const parsed = VentureUpdateSchema.safeParse(raw);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
@@ -53,22 +84,79 @@ export function validateVentureUpdate(
     return { ok: false, reason: `Schema validation failed${where}` };
   }
   const update = parsed.data;
-  if (!registry.ventures.some((v) => v.id === update.venture)) {
-    return {
-      ok: false,
-      reason: `Unknown venture "${update.venture}" — not in governance/venture-registry.yaml.`,
-    };
-  }
   if (update.reporting_period.start > update.reporting_period.end) {
     return { ok: false, reason: "reporting_period.start is after reporting_period.end." };
   }
   return { ok: true, update };
 }
 
-/** Parse + validate a raw file's content. */
-export function loadVentureUpdate(content: string, registry: VentureRegistry = VENTURE_REGISTRY): UpdateResult {
+/** Validate a new operational update. This is the only API that returns write scope. */
+export function validateVentureUpdate(
+  raw: unknown,
+  registry: VentureRegistry = VENTURE_REGISTRY,
+): OperationalUpdateResult {
+  const parsed = parseVentureUpdate(raw);
+  if (!parsed.ok) return parsed;
+
+  const scope = resolveProjectScopeForWrite({ identity: parsed.update.venture }, registry);
+  if (!scope.ok) {
+    return {
+      ok: false,
+      reason:
+        scope.code === "unknown_identity"
+          ? `Unknown venture "${parsed.update.venture}" — not in governance/venture-registry.yaml.`
+          : scope.reason,
+    };
+  }
+  return { ok: true, intent: "operational", writable: true, update: parsed.update, projectId: scope.projectId };
+}
+
+/** Read and validate existing history. The result cannot authorize a write. */
+export function readHistoricalVentureUpdate(
+  raw: unknown,
+  registry: VentureRegistry = VENTURE_REGISTRY,
+): HistoricalUpdateResult {
+  const parsed = parseVentureUpdate(raw);
+  if (!parsed.ok) return parsed;
+
+  const resolution = resolveIdentity(parsed.update.venture, registry);
+  if (resolution.kind === "unknown" || resolution.kind === "missing") {
+    return {
+      ok: false,
+      reason: `Unknown venture "${parsed.update.venture}" — not in governance/venture-registry.yaml.`,
+    };
+  }
+  return {
+    ok: true,
+    intent: "historical",
+    writable: false,
+    update: parsed.update,
+    lineage:
+      resolution.kind === "superseded"
+        ? { canonicalProjectId: resolution.canonicalProjectId, historicalIdentity: true }
+        : { canonicalProjectId: resolution.projectId, historicalIdentity: false },
+  };
+}
+
+/** Parse and authorize a raw file as a new operational update. */
+export function loadVentureUpdate(
+  content: string,
+  registry: VentureRegistry = VENTURE_REGISTRY,
+): OperationalUpdateResult {
   try {
     return validateVentureUpdate(parseFrontmatter(content), registry);
+  } catch (error) {
+    return { ok: false, reason: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+/** Parse an existing record for historical inspection/rendering only. */
+export function loadHistoricalVentureUpdate(
+  content: string,
+  registry: VentureRegistry = VENTURE_REGISTRY,
+): HistoricalUpdateResult {
+  try {
+    return readHistoricalVentureUpdate(parseFrontmatter(content), registry);
   } catch (error) {
     return { ok: false, reason: error instanceof Error ? error.message : String(error) };
   }

@@ -1,0 +1,126 @@
+# Autonomy and decision-rights model — Gina AI-Native Venture Studio
+# Approved: decisions/approvals/0008-company-os-v0-2-ai-native-operating-model.md (Gina, 2026-09-01)
+# Canonical narrative: docs/COMPANY_OS_ARCHITECTURE_V0_2.md §5
+# Constitutional basis: constitution/AUTHORITY.md §§2, 6
+#
+# Design rule: authority is resolved PER ACTION from the factors below.
+# It is never granted by an agent's role. Where several levels could apply,
+# the LOWEST applicable level wins. An unclassified action defaults to "recommend".
+#
+# This file is a specification. Enforcement code does not exist yet — building it
+# is part of the first vertical slice (docs/COMPANY_OS_ARCHITECTURE_V0_2.md §13).
+
+version: 0.2.0
+status: Chairwoman Approved
+
+levels:
+  - id: observe
+    rank: 1
+    may: [inspect, analyze]
+    may_not: [mutate-any-state]
+  - id: recommend
+    rank: 2
+    may: [inspect, analyze, propose-with-rationale-alternatives-and-confidence]
+    may_not: [act-on-own-proposal]
+  - id: execute
+    rank: 3
+    may: [perform-approved-reversible-internal-work]
+    may_not: [act-outside-the-approved-action-class]
+    requires: [reversible, internal-only, approved-action-class]
+  - id: autopilot
+    rank: 4
+    may: [decide-and-execute-routine-bounded-decisions-under-explicit-policy]
+    may_not: [exceed-the-policy-stated-bound]
+    requires: [explicit-written-policy, bounded-scope, recorded-activity-event]
+  - id: founder_reserved
+    rank: 0
+    may: [prepare-a-decision-packet]
+    may_not: [commit-in-any-form]
+
+resolution:
+  rule: lowest-applicable-level-wins
+  default_for_unclassified_actions: recommend
+  authority_derived_from_role: false
+  factors:
+    - action
+    - risk
+    - reversibility
+    - confidence
+    - financial_or_external_impact
+  downgrade_triggers:
+    - low-confidence
+    - irreversible-effect
+    - external-visibility
+    - financial-commitment
+    - sensitive-data-involved
+    - conflicting-canonical-sources
+
+founder_reserved_categories:
+  # Extends constitution/AUTHORITY.md §2; that list remains in force in full.
+  - starting-or-shutting-down-a-venture
+  - major-strategy-or-positioning-change
+  - material-product-pivot
+  - meaningful-financial-commitment
+  - pricing
+  - contracts
+  - external-partnerships
+  - public-launch
+  - legal-and-privacy-policy
+  - safety-policy
+  - sensitive-data-governance
+  - irreversible-high-impact-technical-decision
+  - major-external-claims
+  - high-reputational-risk-actions
+
+# v0.2.1 additions (decisions/approvals/0009-*.md):
+#   - governance/decision-council-policy.yaml    — when and how a council runs
+#   - governance/engineering-review-gate.yaml    — implementer != sole reviewer
+# Neither grants authority. A council produces inputs; a review gate produces a verdict.
+# Model consensus is not approval, and a PASS is not authorization to merge.
+
+audit:
+  every_autonomous_execution_records:
+    - project_id
+    - agent
+    - skill
+    - action_class
+    - resolved_level
+    - factors_evaluated
+    - outcome
+    - activity_event_id
+  escalation_path: functional-agent -> ai-ceo -> founder-decision-packet
+  agents_may_escalate_directly_to_founder: false
+
+initial_action_classes:
+  # Deliberately conservative. NOTHING starts at autopilot: which routine action
+  # classes may start there is an open Founder decision (0008, Remaining Founder
+  # Decisions §5). Widening a bound is a recorded decision, never drift.
+  - id: read-project-state
+    level: observe
+  - id: draft-analysis-or-summary
+    level: recommend
+  - id: propose-decision-or-priority
+    level: recommend
+  - id: update-non-authoritative-working-notes
+    level: execute
+  - id: record-activity-event
+    level: execute
+  - id: write-canonical-decision-record
+    level: founder_reserved
+  - id: change-venture-status-scope-or-priority
+    level: founder_reserved
+  - id: external-communication
+    level: founder_reserved
+  - id: commit-push-merge-or-release
+    level: founder_reserved
+    # v0.2.1 (0009 §8): an Independent Engineering Review Gate PASS makes a change
+    # MERGE-READY. It does not make it merged. This level is unchanged.
+  - id: convene-cross-model-decision-council
+    level: execute
+    # v0.2.1 (0009 §1). Convening is CEO-authorized and reversible; the council's
+    # OUTPUT is only an input. Bounded by governance/decision-council-policy.yaml.
+  - id: accept-medium-engineering-finding-as-risk
+    level: recommend
+    # v0.2.1 (0009 §8). Recorded and attributed. Critical/High can never be accepted.
+  - id: spend-or-commit-funds
+    level: founder_reserved

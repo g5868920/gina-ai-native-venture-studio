@@ -1,0 +1,60 @@
+# Independent engineering review — Phase 0A, round 5 (confirmatory, delta-scoped)
+# Shape: schemas/engineering-review.schema.yaml · Gate: governance/engineering-review-gate.yaml
+#
+# PROVENANCE. Reviewer: a fresh, independent, read-only Codex session. This record
+# TRANSCRIBES the final verdict as relayed by the Founder on 2026-09-18. The
+# implementing session did not see the reviewer's full report or command log, so this
+# record contains the verdict and the one finding exactly as relayed, and nothing
+# inferred beyond them. The implementer authored none of the verdicts below.
+#
+# SCOPE. Confirmatory review of the post–round-4 delta only (R4-01 CLI input-read
+# handling; R4-02 test scratch cleanup; one added test), plus the validity of the
+# round-4 review record.
+
+version: 0.2.2
+review_id: phase-0a-005
+review_status: PASS_WITH_FINDINGS
+reviewer: codex (fresh independent session, read-only)
+reviewed_commit: uncommitted worktree (base a2a455a); tracked-diff sha256 prefix 6495e5e1f5c3bc19
+artifact_identity: MATCH          # reviewer confirmed it reviewed the frozen artifact
+timestamp: "2026-09-18"
+recommended_action: MERGE_READY
+regression_risk: LOW
+architecture_compliance: PASS
+round_4_review_record: VALID
+
+prior_findings:
+  - { id: R4-01, reviewer_verdict: RESOLVED }
+  - { id: R4-02, reviewer_verdict: RESOLVED }
+
+new_findings:
+  - id: R5-01
+    severity: low
+    blocking: false
+    title: Mixed valid + missing CLI input case has no automated regression test
+    evidence: >
+      The current behaviour for a valid + missing mixed-input CLI invocation is correct
+      — exit 1, no partial output — and was independently probed by the reviewer. That
+      exact mixed-input no-partial-output case is not yet protected by an automated test.
+    impact: Test-coverage gap only. Not a current behavioural defect.
+    status: open            # deliberately unfixed — see founder_disposition
+
+# Recorded separately from the reviewer's finding, and NOT an AI disposition.
+founder_disposition:
+  finding: R5-01
+  decided_by: Gina (Founder)
+  decided_on: "2026-09-18"
+  kind: founder-decision     # a human Founder decision, not a bounded AI policy disposition
+  decision: >
+    Accepted as deferred test-hardening debt for Phase 0A. Source and tests are NOT to be
+    modified for it now. It is non-blocking and does not represent a current behavioural
+    defect.
+  consequence: >
+    R5-01 remains open and carried forward as known debt; the reviewed artifact is left
+    byte-identical so the MERGE_READY verdict applies to exactly what will be committed.
+
+closure:
+  implementation_changed_after_this_review: false
+  only_change_after_codex_pass: evidence/reviews/2026-09-18-phase-0a-independent-review-005.yaml
+  merge_ready_declared_by: reviewer (codex) — not by the implementer
+  merge_authority: founder_reserved   # governance/autonomy-model.yaml; commit/merge is Gina's

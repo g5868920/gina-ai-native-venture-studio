@@ -1,0 +1,103 @@
+# Engineering review result schema — canonical field specification.
+# Approved: decisions/approvals/0009-cross-model-deliberation-and-independent-engineering-review.md (Gina, 2026-09-01) §6
+# Narrative: docs/COMPANY_OS_ARCHITECTURE_V0_2.md §16.4 · Policy: governance/engineering-review-gate.yaml
+#
+# The structured result of an INDEPENDENT review — produced by the reviewer, never by
+# the model that implemented the change (architecture §16.1).
+#
+# STATUS: specification only. No Zod counterpart and no drift test exist yet.
+
+version: 0.2.1
+
+fields:
+  review_status:
+    type: enum
+    required: true
+    values: [PASS, PASS_WITH_FINDINGS, BLOCKED]
+  reviewer:
+    type: string
+    required: true
+    notes: >
+      Must not be the implementing model or agent. A review whose reviewer equals the
+      implementer is invalid, not merely discouraged.
+  reviewed_commit:
+    type: string
+    required: true
+    notes: Commit SHA or diff identifier the verdict applies to. A verdict is scoped to what was reviewed.
+  timestamp:
+    type: string
+    required: true
+    notes: ISO 8601.
+  critical_findings:
+    type: finding-list
+    required: true
+    notes: Blocking. Cannot be risk-accepted.
+  high_findings:
+    type: finding-list
+    required: true
+    notes: Blocking. Cannot be risk-accepted.
+  medium_findings:
+    type: finding-list
+    required: true
+    notes: Fix, or record an explicit attributed CTO/CEO risk acceptance against the finding.
+  low_findings:
+    type: finding-list
+    required: true
+    notes: Non-blocking. Includes nits.
+  requirements_coverage:
+    type: string
+    required: true
+    notes: Specification-to-diff comparison — what the approved spec asked for versus what the diff does.
+  tests_status:
+    type: string
+    required: true
+    notes: Includes test ADEQUACY, not only pass/fail. Passing inadequate tests is a finding.
+  regression_risk:
+    type: string
+    required: true
+  security_status:
+    type: string
+    required: true
+  architecture_compliance:
+    type: string
+    required: true
+    notes: Compliance with docs/COMPANY_OS_ARCHITECTURE_V0_2.md, including project isolation.
+  recommended_action:
+    type: string
+    required: true
+  high_risk_areas_touched:
+    type: string-list
+    required: true
+    notes: >
+      From governance/engineering-review-gate.yaml. Non-empty means human or professional
+      review is required IN ADDITION to this one — an AI PASS never satisfies it.
+  remediation_of:
+    type: string
+    required: false
+    notes: The prior review id this one verifies, when this is a re-review.
+  cost:
+    type: object
+    required: true
+    notes: Reviewer cost and wall time.
+
+finding_shape:
+  id: string
+  severity: enum [critical, high, medium, low]
+  summary: string
+  location: string
+  rationale: string
+  status: enum [open, fixed, verified, risk_accepted]
+  risk_accepted_by: string      # required when status is risk_accepted; medium only
+  risk_acceptance_reason: string
+
+unknown_policy: >
+  A dimension the reviewer could not assess is reported as not-assessed with the reason.
+  It is never reported as passing, and never silently omitted.
+unknown_fields: rejected
+
+invariants:
+  - reviewer != implementer.
+  - review_status BLOCKED whenever an unresolved critical or high finding exists.
+  - Severity is never downgraded to clear a gate.
+  - PASS is a review verdict, not authorization to merge, push, release, or deploy —
+    commit-push-merge-or-release remains founder_reserved (governance/autonomy-model.yaml).

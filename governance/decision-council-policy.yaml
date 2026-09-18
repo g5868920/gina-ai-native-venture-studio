@@ -1,0 +1,107 @@
+# Cross-Model Decision Council policy — Gina AI-Native Venture Studio
+# Approved: decisions/approvals/0009-cross-model-deliberation-and-independent-engineering-review.md (Gina, 2026-09-01)
+# Canonical narrative: docs/COMPANY_OS_ARCHITECTURE_V0_2.md §15
+# Output shape: schemas/council-synthesis.schema.yaml
+#
+# A decision-QUALITY layer, not a department and not a discussion. Models produce
+# inputs; the AI CEO owns the synthesis and remains accountable for it.
+#
+# This file is a specification. No enforcement code exists yet, and no provider
+# is configured. Nothing here approves a dependency, an API key, or a spend.
+
+version: 0.2.1
+status: Chairwoman Approved
+
+protocol:
+  rounds:
+    - id: independent_analysis
+      order: 1
+      default: true
+      description: >
+        Each provider analyzes the shared evidence packet independently. Neither sees
+        the other's conclusion. This ordering is the point of the layer — violating it
+        makes the council an echo rather than a check.
+    - id: cross_critique
+      order: 2
+      default: true
+      description: >
+        Each provider critiques the other's STRUCTURED analysis. Fixed length; ends here.
+  default_total_rounds: 2
+  extension:
+    permitted: true
+    authority: ai-ceo
+    requires: [explicit-recorded-decision, stated-reason]
+    never: emergent-or-automatic
+  shared_evidence_packet:
+    framed_by: ai-ceo
+    identical_for_all_providers: true
+    project_scoped: true          # exactly one project_id per run (architecture §4)
+  termination: ai-ceo-synthesis
+
+providers:
+  # Peer reasoning providers invoked through a common structured interface
+  # (architecture §11.2.1). Provider identity is data, not structure.
+  peers:
+    - id: claude
+      role: peer-reasoning-provider
+      invocation: provider-adapter
+    - id: openai
+      role: peer-reasoning-provider
+      invocation: provider-adapter-over-api
+  adapter_rules:
+    common_structured_interface: true
+    second_orchestration_framework: prohibited
+    openai_agents_sdk: not-adopted-may-be-evaluated-later-only-if-tool-using-agent-behaviour-is-required
+    adding_or_removing_a_provider_must_not_change: [skills, policies, state, ceo-synthesis-logic]
+
+authority:
+  models_hold_authority: false
+  consensus_equals_approval: false
+  disagreement_forces_founder_escalation: false
+  escalation_determined_by: governance/autonomy-model.yaml   # autonomy x risk x reversibility x decision rights
+  accountable_for_synthesis: ai-ceo
+  models_may_escalate_directly_to_founder: false
+
+triggers:
+  # Working direction. A council run is warranted for these; it is NOT required for
+  # every agent task, and NOT invoked by default for routine low-risk work.
+  warranted:
+    - major-strategy-decision
+    - architecture-decision
+    - significant-scope-or-prioritization-change
+    - contradictory-evidence
+    - low-ceo-or-specialist-confidence
+    - high-uncertainty
+    - material-cost-impact
+    - high-impact-launch-decision
+    - specialist-request-for-independent-challenge
+    - founder-reserved-decision-preparation
+  not_warranted_by_default:
+    - routine-low-risk-work
+    - every-agent-task
+
+observability:
+  cost_and_latency_recorded: true
+  per_run_records: [provider, cost, wall_time, rounds_used, outcome]
+
+audit:
+  material_runs_preserve:
+    - shared_evidence_packet
+    - each_model_independent_analysis
+    - each_model_critique
+    - identified_disagreement
+    - ceo_synthesis
+    - resulting_action_or_escalation
+  retention: same-as-agent-run-records
+  raw_transcripts_on_default_dashboard: false   # drill-down only (architecture §8.1)
+
+prohibited:
+  - exceeding-default-rounds-without-a-recorded-ceo-reason
+  - leaking-either-conclusion-into-the-other-independent-first-pass
+  - treating-consensus-as-approval
+  - escalating-on-disagreement-alone
+  - a-run-spanning-more-than-one-project_id
+  - models-invoking-each-other-directly
+  - a-council-invoking-itself
+  - adding-a-second-orchestration-framework-to-reach-a-provider
+  - discarding-outputs-evidence-disagreement-or-synthesis-for-a-material-run

@@ -24,7 +24,7 @@ Executive output enters review at `CEO Review Required`; CEO review yields `Revi
 
 ## 5. Conflicts
 
-Cross-role conflicts go to the CEO for synthesis; if resolution requires a reserved decision, the CEO prepares a decision packet. Conflicts are recorded, never silently resolved. Ownership disputes are resolved against `executives/EXECUTIVE_OPERATING_MATRIX.md`; if the matrix is ambiguous, that ambiguity is escalated as a matrix defect.
+**Amended 2026-09-01 by `decisions/approvals/0008-*.md` §5:** cross-role conflicts go to the CEO for synthesis. The CEO now **resolves** the disagreement when it can be resolved within approved strategy and policy, recording the rationale as an activity event; only what it cannot resolve, or what is Founder-reserved, becomes a decision packet. Functional agents never escalate directly to Gina when the CEO can resolve the issue. The Founder receives exceptions, not organizational debate. If resolution requires a reserved decision, the CEO prepares a decision packet. Conflicts are recorded, never silently resolved. Ownership disputes are resolved against `executives/EXECUTIVE_OPERATING_MATRIX.md`; if the matrix is ambiguous, that ambiguity is escalated as a matrix defect.
 
 ## 6. Writeback
 

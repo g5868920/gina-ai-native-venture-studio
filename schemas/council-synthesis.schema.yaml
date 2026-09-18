@@ -1,0 +1,109 @@
+# Council synthesis schema — canonical field specification.
+# Approved: decisions/approvals/0009-cross-model-deliberation-and-independent-engineering-review.md (Gina, 2026-09-01) §3
+# Narrative: docs/COMPANY_OS_ARCHITECTURE_V0_2.md §15.4 · Policy: governance/decision-council-policy.yaml
+#
+# The structured output of a Cross-Model Decision Council run, as synthesized by the
+# AI CEO. Consumed by the Founder Control Tower (architecture §8.1) WITHOUT
+# re-interpretation: the view renders these fields, it does not compute meaning from them.
+#
+# STATUS: specification only. Unlike schemas/venture-update.schema.yaml, no Zod
+# counterpart exists yet and no drift test guards it. Implementing both is part of
+# the council build, not of this amendment.
+
+version: 0.2.1
+
+fields:
+  issue:
+    type: string
+    required: true
+    notes: The decision or material issue the council was convened on.
+  project_id:
+    type: string
+    required: true
+    notes: >
+      Exactly one. Must match a project_id in governance/venture-registry.yaml.
+      A council run never spans projects (architecture §4, §15.6).
+  council_run_id:
+    type: string
+    required: true
+  claude_recommendation:
+    type: string
+    required: true
+    notes: Produced BEFORE seeing the other provider's conclusion.
+  openai_recommendation:
+    type: string
+    required: true
+    notes: Produced BEFORE seeing the other provider's conclusion.
+  areas_of_agreement:
+    type: string-list
+    required: true
+  areas_of_disagreement:
+    type: string-list
+    required: true
+    notes: Recorded even when the CEO resolves them. Disagreement is never erased by synthesis.
+  material_evidence:
+    type: string-list
+    required: true
+    notes: File paths or references. Claims without references are treated as unverified.
+  assumptions:
+    type: string-list
+    required: true
+  ceo_conclusion:
+    type: string
+    required: true
+    notes: The CEO's own conclusion. Not a vote count and not a restatement of consensus.
+  ceo_rationale:
+    type: string
+    required: true
+  confidence:
+    type: string
+    required: true
+    notes: One of low | medium | high. Low confidence is itself a council trigger.
+  residual_uncertainty:
+    type: string-list
+    required: true
+    notes: What remains unknown after the run. Empty means "nothing unresolved" — never a gap left unstated.
+  reversibility:
+    type: string
+    required: true
+    notes: One of reversible | partially-reversible | irreversible. Feeds autonomy resolution.
+  impact:
+    type: string
+    required: true
+  action_taken_or_recommended:
+    type: string
+    required: true
+  founder_action_required:
+    type: boolean
+    required: true
+  escalation_reason:
+    type: string
+    required: false
+    notes: >
+      Required when founder_action_required is true; otherwise omitted. The reason must cite
+      autonomy / risk / reversibility / decision-right policy — NOT "the models disagreed",
+      which is never on its own an escalation reason (architecture §15.2).
+  rounds_used:
+    type: integer
+    required: true
+    notes: Default 2. A higher value requires a recorded CEO reason in round_extension_reason.
+  round_extension_reason:
+    type: string
+    required: false
+  providers_invoked:
+    type: string-list
+    required: true
+  cost:
+    type: object
+    required: true
+    notes: Per-provider cost and wall time. Council expense stays measured, not assumed.
+
+unknown_policy: >
+  Missing facts remain unknown and are recorded in residual_uncertainty. The synthesis never
+  fills a gap, invents evidence, or manufactures agreement that the analyses did not contain.
+unknown_fields: rejected
+
+invariants:
+  - Model consensus is not approval; this record can never carry an approval status.
+  - Disagreement alone never sets founder_action_required to true.
+  - Independent recommendations are captured before any cross-critique.
